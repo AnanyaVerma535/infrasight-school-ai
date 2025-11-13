@@ -1,0 +1,4 @@
+project_id = "utdloxlqsnugrcohnyou"
+
+[functions.classify-infrastructure]
+verify_jwt = true
