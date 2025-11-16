@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
 import { 
   LayoutDashboard, 
@@ -8,7 +9,8 @@ import {
   MessageSquare, 
   Mail, 
   LogOut,
-  Globe
+  Globe,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,15 +21,23 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const { language, setLanguage, t } = useLanguage();
   const { signOut } = useAuth();
+  const { role } = useUserRole();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const navigation = [
-    { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+  const citizenNavigation = [
+    { name: t('nav.dashboard'), href: '/citizen-dashboard', icon: LayoutDashboard },
     { name: t('nav.classify'), href: '/classify', icon: ScanEye },
     { name: t('nav.feedback'), href: '/feedback', icon: MessageSquare },
     { name: t('nav.contact'), href: '/contact', icon: Mail },
   ];
+
+  const officerNavigation = [
+    { name: 'Officer Dashboard', href: '/officer-dashboard', icon: Shield },
+    { name: t('nav.feedback'), href: '/feedback', icon: MessageSquare },
+  ];
+
+  const navigation = role === 'officer' ? officerNavigation : citizenNavigation;
 
   const handleLogout = async () => {
     await signOut();
@@ -48,7 +58,9 @@ export function Layout({ children }: LayoutProps) {
                 {t('auth.title')}
               </h1>
               <p className="text-xs text-muted-foreground">
-                {language === 'en' ? 'School Monitoring' : 'स्कूल निगरानी'}
+                {role === 'officer' 
+                  ? (language === 'en' ? 'Officer Portal' : 'अधिकारी पोर्टल')
+                  : (language === 'en' ? 'School Monitoring' : 'स्कूल निगरानी')}
               </p>
             </div>
           </div>
