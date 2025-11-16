@@ -7,14 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { ScanEye, Globe, Loader2 } from 'lucide-react';
+import { ScanEye, Globe, Loader2, Shield, Users } from 'lucide-react';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'officer' | 'citizen'>('citizen');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -23,7 +25,21 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true });
+      // Fetch user role and redirect accordingly
+      const fetchUserRole = async () => {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data?.role === 'officer') {
+          navigate('/officer-dashboard', { replace: true });
+        } else {
+          navigate('/citizen-dashboard', { replace: true });
+        }
+      };
+      fetchUserRole();
     }
   }, [user, navigate]);
 
@@ -47,7 +63,7 @@ export default function Auth() {
       } else {
         const redirectUrl = `${window.location.origin}/`;
         
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -60,13 +76,30 @@ export default function Auth() {
 
         if (error) throw error;
 
-        toast({
-          title: t('common.success'),
-          description: language === 'en' 
-            ? 'Account created successfully! You can now login.' 
-            : 'खाता सफलतापूर्वक बनाया गया! अब आप लॉगिन कर सकते हैं।',
-        });
-        setIsLogin(true);
+        if (data.user) {
+          // Insert user role
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({ user_id: data.user.id, role: selectedRole });
+
+          if (roleError) {
+            console.error('Error inserting role:', roleError);
+            toast({
+              title: t('common.error'),
+              description: 'Failed to set user role',
+              variant: 'destructive',
+            });
+            return;
+          }
+
+          toast({
+            title: t('common.success'),
+            description: language === 'en' 
+              ? 'Account created successfully! You can now login.' 
+              : 'खाता सफलतापूर्वक बनाया गया! अब आप लॉगिन कर सकते हैं।',
+          });
+          setIsLogin(true);
+        }
       }
     } catch (error: any) {
       toast({
@@ -154,7 +187,35 @@ export default function Auth() {
                 />
               </div>
 
-              <Button 
+              {!isLogin && (
+                <div className="space-y-3">
+                  <Label>Select Role</Label>
+                  <RadioGroup value={selectedRole} onValueChange={(value) => setSelectedRole(value as 'officer' | 'citizen')}>
+                    <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                      <RadioGroupItem value="citizen" id="citizen" />
+                      <Label htmlFor="citizen" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <Users className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">Citizen</div>
+                          <div className="text-xs text-muted-foreground">Report issues and check status</div>
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                      <RadioGroupItem value="officer" id="officer" />
+                      <Label htmlFor="officer" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <Shield className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">Officer</div>
+                          <div className="text-xs text-muted-foreground">Verify and manage reports</div>
+                        </div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              )}
+
+              <Button
                 type="submit" 
                 className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
                 disabled={loading}

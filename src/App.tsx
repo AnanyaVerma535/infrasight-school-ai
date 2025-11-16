@@ -7,7 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import CitizenDashboard from "./pages/CitizenDashboard";
+import OfficerDashboard from "./pages/OfficerDashboard";
 import Classify from "./pages/Classify";
 import Feedback from "./pages/Feedback";
 import Contact from "./pages/Contact";
@@ -24,13 +25,21 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Auth />} />
               <Route path="/auth" element={<Auth />} />
               <Route
-                path="/dashboard"
+                path="/citizen-dashboard"
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <CitizenDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/officer-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <OfficerDashboard />
                   </ProtectedRoute>
                 }
               />
