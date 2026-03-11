@@ -1,26 +1,105 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Infrasight - School Infrastructure Monitoring System</title>
-    <meta name="description" content="AI-powered school infrastructure monitoring and classification system. Monitor classrooms, toilets, playgrounds, and buildings with intelligent image analysis." />
-    <meta name="keywords" content="school infrastructure, AI monitoring, education technology, infrastructure classification, school safety" />
-    <meta name="author" content="Infrasight" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfraSight - School Infrastructure Monitoring System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-home">
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary-orange)"><path d="M12 3L4 9V21H20V9L12 3ZM12 7.7C12.7 7.7 13.3 8.3 13.3 9C13.3 9.7 12.7 10.3 12 10.3C11.3 10.3 10.7 9.7 10.7 9C10.7 8.3 11.3 7.7 12 7.7ZM18 19H6V11H18V19Z"/></svg>
+            InfraSight - School Infrastructure Monitoring System
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="status.html">School Status</a></li>
+                <li><a href="report.html">Report</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="team.html">Team</a></li>
+                <li id="logout-btn"><a href="#" onclick="Auth.logout()">Logout</a></li>
+                <li><div class="user-badge" id="userBadge">HI</div></li>
+            </ul>
+        </nav>
+    </header>
 
-    <meta property="og:title" content="Infrasight - School Infrastructure Monitoring System" />
-    <meta property="og:description" content="AI-powered school infrastructure monitoring and classification system" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <section class="hero">
+        <div class="hero-content">
+            <div class="page-tag">AI-supported evidence collection for unsafe school infrastructure</div>
+            <h1>Report damaged classrooms, unsafe buildings and neglected school facilities</h1>
+            <p>InfraSight helps citizens report poor infrastructure in government schools with one clear photo, while officers verify complaints and track suspected misuse of public development funds.</p>
+            <div class="hero-actions">
+                <a href="report.html" class="btn-orange">Report Bad Infrastructure</a>
+                <a href="status.html" class="btn-outline">Check School Status</a>
+            </div>
+        </div>
+    </section>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Infrasight - School Monitoring" />
-    <meta name="twitter:description" content="AI-powered school infrastructure monitoring system" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+    <section class="home-summary" id="homeSummary">
+        <div class="summary-card">
+            <h3>Total reports</h3>
+            <strong id="totalReports">0</strong>
+        </div>
+        <div class="summary-card">
+            <h3>Pending review</h3>
+            <strong id="pendingReports">0</strong>
+        </div>
+        <div class="summary-card">
+            <h3>Verified cases</h3>
+            <strong id="verifiedReports">0</strong>
+        </div>
+        <div class="summary-card">
+            <h3>Flagged misuse alerts</h3>
+            <strong id="flaggedReports">0</strong>
+        </div>
+    </section>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <section class="action-grid">
+        <div class="action-card action-report" onclick="window.location.href='report.html'">
+            <div class="overlay">
+                <h3>Upload One Bad Image</h3>
+                <p>Citizens submit one clear photo showing damaged or unsafe school infrastructure.</p>
+            </div>
+        </div>
+        <div class="action-card action-status" onclick="window.location.href='status.html'">
+            <div class="overlay">
+                <h3>Check School Status</h3>
+                <p>Track pending, verified and flagged cases reported from government schools.</p>
+            </div>
+        </div>
+        <div class="action-card action-officer" onclick="window.location.href='status.html'">
+            <div class="overlay">
+                <h3>Officer Verification</h3>
+                <p>Officials review submitted evidence and mark cases as verified or flagged.</p>
+            </div>
+        </div>
+        
+    </section>
+
+    <footer>
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="status.html">School Status</a>
+            <a href="contact.html">Contact</a>
+            <a href="team.html">Team</a>
+        </div>
+        <p>&copy; 2026 InfraSight - School Infrastructure </p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.checkAuth();
+            const reports = Storage.migrateReports();
+            document.getElementById('totalReports').textContent = reports.length;
+            document.getElementById('pendingReports').textContent = reports.filter(report => report.status === 'pending').length;
+            document.getElementById('verifiedReports').textContent = reports.filter(report => report.status === 'verified').length;
+            document.getElementById('flaggedReports').textContent = reports.filter(report => report.status === 'flagged').length;
+        });
+    </script>
+</body>
 </html>

@@ -1,0 +1,349 @@
+this is staus file <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Status Dashboard - InfraSight</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-status has-page-bg">
+    <header>
+        <div class="logo">InfraSight - School Infrastructure Monitoring System</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="status.html" class="active">School Status</a></li>
+                <li><a href="report.html">Report</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="team.html">Team</a></li>
+                <li id="logout-btn"><a href="#" onclick="Auth.logout()">Logout</a></li>
+                <li><div class="user-badge" id="userBadge">HI</div></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; flex-wrap: wrap; gap: 15px;">
+            <h1 class="section-title" style="margin-bottom: 0;">School Infrastructure Status</h1>
+            <div id="roleIndicator" style="padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                </div>
+        </div>
+        
+        <p class="section-intro" id="viewDescription">Review bad-condition reports and monitor unsafe schools. (Sorted by AI Urgency)</p>
+
+        <div id="verifyModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center;">
+            <div class="modal-content" style="background-color: var(--card-bg); margin: auto; padding: 30px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 16px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <span class="close-modal" onclick="closeVerifyModal()" style="color: var(--muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; right: 20px; top: 15px;">&times;</span>
+                <h2 style="color: var(--primary-blue); margin-bottom: 15px;">Verify Infrastructure Fix</h2>
+                <p style="margin-bottom: 20px; color: var(--muted); font-size: 0.9rem;">To mark this case as verified, officers must upload a live photo of the repaired infrastructure and provide notes.</p>
+                
+                <div class="form-group">
+                    <label>Upload Good Infrastructure Photo *</label>
+                    <input type="file" id="goodPhotoInput" accept="image/*" onchange="previewGoodPhoto(event)" style="padding: 10px;">
+                </div>
+                
+                <div class="preview-box" id="goodPhotoPreviewBox" style="display: none; margin-bottom: 20px; height: 180px;">
+                    <img id="goodPhotoPreview" src="" alt="Good Photo Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid var(--success);">
+                </div>
+
+                <div class="form-group">
+                    <label>Officer Notes / Action Taken *</label>
+                    <textarea id="proofNotes" class="form-control" rows="3" placeholder="Describe the repairs made..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+                </div>
+
+                <input type="hidden" id="verifyReportId">
+                <button class="login-btn" onclick="submitVerification()" style="width: 100%;">Submit Verification Proof</button>
+            </div>
+        </div>
+
+        <div class="summary-grid" id="summaryGrid"></div>
+
+        <div class="filter-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 12px;">
+            
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <strong style="color: var(--primary-blue); min-width: 140px;">Filter by Status:</strong>
+                <div class="filter-panel" style="margin-bottom: 0;">
+                    <button class="filter-btn status-btn active" data-filter="all">All</button>
+                    <button class="filter-btn status-btn" data-filter="pending">Pending</button>
+                    <button class="filter-btn status-btn" data-filter="verified">Verified</button>
+                    <button class="filter-btn status-btn" data-filter="flagged">Flagged</button>
+                </div>
+            </div>
+
+            <div id="priorityFilterRow" style="display: none; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <strong style="color: var(--primary-blue); min-width: 140px;">AI Priority (Officer):</strong>
+                <div class="filter-panel" style="margin-bottom: 0;">
+                    <button class="filter-btn priority-btn active" data-priority="all">All</button>
+                    <button class="filter-btn priority-btn" data-priority="Worst" style="border-bottom: 3px solid #dc2626;">Worst</button>
+                    <button class="filter-btn priority-btn" data-priority="Bad" style="border-bottom: 3px solid #ca8a04;">Bad</button>
+                    <button class="filter-btn priority-btn" data-priority="Good" style="border-bottom: 3px solid #16a34a;">Good</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="reportsList" class="reports-grid"></div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="report.html">Report</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p>&copy; 2026 InfraSight - School Infrastructure Monitoring</p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        let currentStatusFilter = 'all';
+        let currentPriorityFilter = 'all';
+
+        function getReports() {
+            return Storage.migrateReports();
+        }
+
+        function renderSummary() {
+            const reports = getReports();
+            const totalFunds = reports.reduce((sum, report) => sum + (Number(report.fundAmount) || 0), 0);
+            document.getElementById('summaryGrid').innerHTML = `
+                <div class="dashboard-mini-card"><span>Total reports</span><strong>${reports.length}</strong></div>
+                <div class="dashboard-mini-card"><span>Pending review</span><strong>${reports.filter(report => report.status === 'pending').length}</strong></div>
+                <div class="dashboard-mini-card"><span>Verified cases</span><strong>${reports.filter(report => report.status === 'verified').length}</strong></div>
+                <div class="dashboard-mini-card"><span>Flagged cases</span><strong>${reports.filter(report => report.status === 'flagged').length}</strong></div>
+                <div class="dashboard-mini-card"><span>Known funds linked</span><strong>${UI.formatCurrency(totalFunds)}</strong></div>
+            `;
+        }
+
+        function renderReports() {
+            const reports = getReports();
+            const user = Auth.getCurrentUser();
+            const container = document.getElementById('reportsList');
+            const roleIndicator = document.getElementById('roleIndicator');
+            const viewDesc = document.getElementById('viewDescription');
+            const priorityFilterRow = document.getElementById('priorityFilterRow');
+            
+            // Set Role Specific UI & Show/Hide Officer AI Filter
+            if (user) {
+                roleIndicator.textContent = `Viewing as: ${user.role.toUpperCase()}`;
+                roleIndicator.style.background = user.role === 'officer' ? 'var(--primary-orange)' : 'var(--primary-blue)';
+                roleIndicator.style.color = user.role === 'officer' ? 'var(--primary-blue)' : 'white';
+                
+                if (user.role === 'officer') {
+                    viewDesc.textContent = "Officer Dashboard: Review pending complaints, filter by AI urgency, or submit proof photos to verify repairs.";
+                    priorityFilterRow.style.display = 'flex'; // SHOW priority filter for officers
+                } else {
+                    viewDesc.textContent = "Citizen Dashboard: Track the status of your complaints and monitor government action.";
+                    priorityFilterRow.style.display = 'none'; // HIDE priority filter for citizens
+                }
+            } else {
+                roleIndicator.textContent = `Viewing as: PUBLIC`;
+                roleIndicator.style.background = 'var(--muted)';
+                roleIndicator.style.color = 'white';
+                priorityFilterRow.style.display = 'none'; // HIDE priority filter for public
+            }
+
+            // --- DOUBLE FILTER LOGIC ---
+            let filteredReports = reports.filter((report) => {
+                const statusMatch = currentStatusFilter === 'all' || report.status === currentStatusFilter;
+                const priorityMatch = currentPriorityFilter === 'all' || report.category === currentPriorityFilter;
+                return statusMatch && priorityMatch;
+            });
+
+            // --- AI SORTING LOGIC ---
+            const priority = { "Worst": 1, "Bad": 2, "Good": 3 };
+            filteredReports.sort((a, b) => {
+                const pA = priority[a.category] || 4;
+                const pB = priority[b.category] || 4;
+                
+                // If AI priority is the same, sort by newest timestamp first
+                if (pA === pB) {
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                }
+                return pA - pB;
+            });
+
+            if (!filteredReports.length) {
+                container.innerHTML = '<div class="empty-state">No reports found matching these filters.</div>';
+                return;
+            }
+
+            container.innerHTML = filteredReports.map((report) => {
+                const canCitizenDelete = user && user.role === 'citizen' && user.name === report.submittedBy;
+                const imageSrc = report.issueImg || 'https://via.placeholder.com/900x700?text=Issue+Image';
+                const hasResolvedImage = report.status === 'verified' && report.resolvedImage;
+                
+                // Determine border color based on AI classification
+                let borderStyle = '';
+                let catColor = '#6b7280'; 
+                if (report.category === 'Worst') { borderStyle = 'border-left: 6px solid #dc2626;'; catColor = '#dc2626'; }
+                else if (report.category === 'Bad') { borderStyle = 'border-left: 6px solid #ca8a04;'; catColor = '#ca8a04'; }
+                else if (report.category === 'Good') { borderStyle = 'border-left: 6px solid #16a34a;'; catColor = '#16a34a'; }
+                
+                return `
+                    <article class="report-card" style="${borderStyle}">
+                        <div class="report-img-container" style="display: flex;">
+                            <div style="position: relative; flex: 1; height: 100%;">
+                                <div style="position: absolute; top: 8px; left: 8px; background: rgba(220, 38, 38, 0.8); color: white; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">Reported Issue</div>
+                                <img src="${imageSrc}" alt="Reported bad infrastructure at ${report.schoolName}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            ${hasResolvedImage ? `
+                            <div style="position: relative; flex: 1; height: 100%; border-left: 2px solid white;">
+                                <div style="position: absolute; top: 8px; left: 8px; background: rgba(22, 163, 74, 0.8); color: white; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">Verified Fix</div>
+                                <img src="${report.resolvedImage}" alt="Verified good infrastructure" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="report-content">
+                            <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom: 12px;">
+                                <div>
+                                    <h3 style="color: var(--primary-blue); line-height: 1.3; margin-bottom: 4px;">${report.schoolName}</h3>
+                                    ${report.category ? `<span style="font-size: 0.75rem; font-weight: bold; background: #eef2f6; padding: 3px 8px; border-radius: 4px; color: ${catColor}; display: inline-block;">AI Classification: ${report.category} Priority</span>` : ''}
+                                </div>
+                                <span class="status-badge status-${report.status}">${report.status}</span>
+                            </div>
+                            <div class="report-meta">
+                                <div><strong>Location:</strong> ${report.location}</div>
+                                <div><strong>Known fund amount:</strong> ${UI.formatCurrency(report.fundAmount)}</div>
+                                <div><strong>Submitted by:</strong> ${report.submittedBy}</div>
+                                <div><strong>Reported on:</strong> ${UI.formatDate(report.timestamp)}</div>
+                            </div>
+                            <p>${report.description}</p>
+                            
+                            ${report.status === 'verified' && report.proofNotes ? `
+                                <div style="margin-top: 15px; padding: 12px; background: #f0fdf4; border-left: 4px solid var(--success); border-radius: 4px; font-size: 0.9rem;">
+                                    <strong style="color: var(--success); display:block; margin-bottom:4px;">Officer Verification Notes:</strong>
+                                    ${report.proofNotes}
+                                </div>
+                            ` : ''}
+
+                            <div class="action-btns" style="margin-top: 18px;">
+                                ${user && user.role === 'officer' && report.status !== 'verified' ? `
+                                    <button class="btn-small btn-verify" onclick="openVerifyModal('${report.id}')" style="flex: 2;">Upload Proof & Verify</button>
+                                ` : ''}
+                                ${user && user.role === 'officer' ? `
+                                    ${report.status !== 'flagged' ? `<button class="btn-small btn-flag" onclick="updateStatus('${report.id}', 'flagged')" style="flex: 1;">Flag Issue</button>` : ''}
+                                    <button class="btn-small btn-delete" onclick="deleteReport('${report.id}')">Delete</button>
+                                ` : canCitizenDelete ? `
+                                    <button class="btn-small btn-delete" onclick="deleteReport('${report.id}')">Delete My Report</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function updateStatus(id, status) {
+            const user = Auth.getCurrentUser();
+            if (!user || user.role !== 'officer') {
+                alert('Only officers can change report status.');
+                return;
+            }
+            Storage.updateReportStatus(id, status);
+            renderSummary();
+            renderReports();
+        }
+
+        function deleteReport(id) {
+            const user = Auth.getCurrentUser();
+            const report = getReports().find((item) => String(item.id) === String(id));
+            if (!report) return;
+
+            const canDelete = user.role === 'officer' || (user.role === 'citizen' && user.name === report.submittedBy);
+            if (!canDelete) {
+                alert('You are not allowed to delete this report.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete this report?')) {
+                Storage.deleteReport(id);
+                renderSummary();
+                renderReports();
+            }
+        }
+
+        let currentGoodImageBase64 = null;
+
+        function openVerifyModal(id) {
+            document.getElementById('verifyReportId').value = id;
+            document.getElementById('verifyModal').style.display = 'flex';
+            document.getElementById('goodPhotoInput').value = '';
+            document.getElementById('proofNotes').value = '';
+            document.getElementById('goodPhotoPreviewBox').style.display = 'none';
+            currentGoodImageBase64 = null;
+        }
+
+        function closeVerifyModal() {
+            document.getElementById('verifyModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('verifyModal');
+            if (event.target == modal) {
+                closeVerifyModal();
+            }
+        }
+
+        function previewGoodPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentGoodImageBase64 = e.target.result;
+                    document.getElementById('goodPhotoPreview').src = currentGoodImageBase64;
+                    document.getElementById('goodPhotoPreviewBox').style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function submitVerification() {
+            const id = document.getElementById('verifyReportId').value;
+            const notes = document.getElementById('proofNotes').value.trim();
+
+            if (!currentGoodImageBase64) {
+                alert('Please upload a clear photo showing the good/repaired infrastructure to verify this case.');
+                return;
+            }
+            if (!notes) {
+                alert('Please provide verification notes detailing the actions taken.');
+                return;
+            }
+            
+            Storage.verifyReportWithImage(id, currentGoodImageBase64, notes);
+            closeVerifyModal();
+            renderSummary();
+            renderReports();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.checkAuth();
+            renderSummary();
+            renderReports();
+            
+            // Event Listeners for Status Buttons
+            document.querySelectorAll('.status-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentStatusFilter = button.dataset.filter;
+                    document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderReports();
+                });
+            });
+
+            // Event Listeners for Priority Buttons
+            document.querySelectorAll('.priority-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentPriorityFilter = button.dataset.priority;
+                    document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderReports();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

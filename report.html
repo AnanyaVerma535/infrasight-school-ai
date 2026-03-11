@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Bad Infrastructure - InfraSight</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-report has-page-bg">
+    <header>
+        <div class="logo">InfraSight - School Infrastructure Monitoring System</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="status.html">School Status</a></li>
+                <li><a href="report.html" class="active">Report</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="team.html">Team</a></li>
+                <li id="logout-btn"><a href="#" onclick="Auth.logout()">Logout</a></li>
+                <li><div class="user-badge" id="userBadge">HI</div></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="section-title">Citizen Issue Reporting</h1>
+        <p class="section-intro">Report unsafe or damaged school infrastructure using one clear image. This page is only for citizen submissions and focuses on bad-condition evidence rather than before/after comparison.</p>
+
+        <div class="card">
+            <div class="highlight-note">Citizens can upload only <strong>one bad-condition image</strong> per report so officers can review the issue clearly.</div>
+
+            <form id="reportForm">
+                <div class="form-group">
+                    <label for="schoolName">School Name</label>
+                    <input type="text" id="schoolName" placeholder="Enter school name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" placeholder="Village / Block / District / State" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fundAmount">Known Fund Allocation (Optional)</label>
+                    <input type="number" id="fundAmount" placeholder="Enter known or suspected released amount, if available">
+                    <div class="form-helper">Leave blank if you do not know the released amount.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Describe the problem</label>
+                    <textarea id="description" rows="5" placeholder="Explain what is damaged, unsafe or missing in the school infrastructure..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="issueImgInput">Upload One Bad Infrastructure Image</label>
+                    <input type="file" id="issueImgInput" accept="image/*" required>
+                    <div class="form-helper">Upload one clear photo only. Example: broken roof, cracked walls, damaged toilets, unsafe wiring, or unusable classrooms.</div>
+                </div>
+
+                <div class="preview-box" id="issuePreview">
+                    <span>No issue image selected yet</span>
+                </div>
+
+                <button type="submit" class="btn-orange" id="submitBtn" style="width: 100%; margin-top: 22px;">Submit Issue Report</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="status.html">School Status</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p>&copy; 2026 InfraSight - School Infrastructure Monitoring</p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = Auth.checkAuth();
+            if (user && user.role !== 'citizen') {
+                alert('Only citizens can submit issue reports. Officers can review reports from the School Status dashboard.');
+                window.location.href = 'status.html';
+                return;
+            }
+
+            const issueInput = document.getElementById('issueImgInput');
+            issueInput.addEventListener('change', () => previewIssueImage(issueInput));
+        });
+
+        function previewIssueImage(input) {
+            const preview = document.getElementById('issuePreview');
+            const files = input.files;
+
+            if (!files || files.length === 0) {
+                preview.innerHTML = '<span>No issue image selected yet</span>';
+                return;
+            }
+
+            if (files.length > 1) {
+                alert('Please upload only one bad-condition image.');
+                input.value = '';
+                preview.innerHTML = '<span>No issue image selected yet</span>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                preview.innerHTML = `<img src="${event.target.result}" alt="Issue preview">`;
+            };
+            reader.readAsDataURL(files[0]);
+        }
+
+        // Updated form submission to handle AI classification API
+        document.getElementById('reportForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const issueInput = document.getElementById('issueImgInput');
+            const files = issueInput.files;
+
+            if (!files || files.length !== 1) {
+                alert('Please upload exactly one bad-condition image.');
+                return;
+            }
+
+            const issuePreviewSrc = document.querySelector('#issuePreview img')?.src;
+            if (!issuePreviewSrc) {
+                alert('Please wait for the image preview to load before submitting.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalBtnText = submitBtn.innerText;
+            
+            // Set loading state
+            submitBtn.innerText = 'AI is analyzing the image... Please wait.';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+
+            try {
+                // 1. Send image to Python FastAPI Backend for Classification
+                const formData = new FormData();
+                formData.append("image_base64", issuePreviewSrc);
+
+                const response = await fetch("http://localhost:8000/api/classify", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                const aiResult = await response.json();
+                const aiCategory = aiResult.category || "Bad"; // Defaults to Bad if something goes wrong
+
+                // 2. Prepare remaining data and save
+                const user = Auth.getCurrentUser();
+                const fundAmountValue = document.getElementById('fundAmount').value.trim();
+
+                Storage.addReport({
+                    schoolName: document.getElementById('schoolName').value.trim(),
+                    location: document.getElementById('location').value.trim(),
+                    description: document.getElementById('description').value.trim(),
+                    fundAmount: fundAmountValue ? Number(fundAmountValue) : null,
+                    issueImg: issuePreviewSrc,
+                    submittedBy: user.name,
+                    category: aiCategory // Include AI Classification in stored data
+                });
+
+                // 3. Show success alert with Priority Assessment
+                alert(`Your bad infrastructure report has been submitted successfully.\n\nAI Priority Assessment: ${aiCategory}`);
+                window.location.href = 'status.html';
+
+            } catch (error) {
+                console.error("AI Classification Error:", error);
+                alert("Error connecting to AI Server. Make sure python main.py is running!");
+            } finally {
+                // Reset button state
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            }
+        });
+    </script>
+</body>
+</html>

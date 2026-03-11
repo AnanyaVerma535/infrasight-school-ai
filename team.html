@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfraSight Team</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-team has-page-bg">
+    <header>
+        <div class="logo">InfraSight - School Infrastructure Monitoring System</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="status.html">School Status</a></li>
+                <li><a href="report.html">Report</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="team.html" class="active">Team</a></li>
+                <li id="logout-btn"><a href="#" onclick="Auth.logout()">Logout</a></li>
+                <li><div class="user-badge" id="userBadge">HI</div></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="section-title">Project Team</h1>
+        <p class="section-intro">A collaborative team working on accountability, evidence collection and public monitoring of poor school infrastructure.</p>
+
+        <div class="team-grid">
+            <div class="team-member">
+                <img src="https://i.pravatar.cc/150?u=aarav" alt="Aarav Sharma">
+                <h3>Aarav Sharma</h3>
+                <p>Lead Developer</p>
+            </div>
+            <div class="team-member">
+                <img src="https://i.pravatar.cc/150?u=isha" alt="Isha Patel">
+                <h3>Isha Patel</h3>
+                <p>System Architect</p>
+            </div>
+            <div class="team-member">
+                <img src="https://i.pravatar.cc/150?u=rohit" alt="Rohit Verma">
+                <h3>Rohit Verma</h3>
+                <p>Data & Verification Lead</p>
+            </div>
+            <div class="team-member">
+                <img src="https://i.pravatar.cc/150?u=sanya" alt="Sanya Khan">
+                <h3>Sanya Khan</h3>
+                <p>UI/UX Designer</p>
+            </div>
+            <div class="team-member">
+                <img src="https://i.pravatar.cc/150?u=kabir" alt="Kabir Singh">
+                <h3>Kabir Singh</h3>
+                <p>Public Outreach Coordinator</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p>&copy; 2024 InfraSight - Team behind school infrastructure accountability.</p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.checkAuth();
+        });
+    </script>
+</body>
+</html>

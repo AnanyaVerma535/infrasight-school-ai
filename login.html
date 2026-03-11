@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - InfraSight</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-login has-page-bg" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: #f5f5f5;">
+    <div class="login-container" style="width: 100%; max-width: 400px; padding: 20px;">
+        <div class="login-card" style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#FF8C42" style="margin: 0 auto; display: block; margin-bottom: 15px;">
+                    <path d="M12 3L4 9V21H20V9L12 3ZM12 7.7C12.7 7.7 13.3 8.3 13.3 9C13.3 9.7 12.7 10.3 12 10.3C11.3 10.3 10.7 9.7 10.7 9C10.7 8.3 11.3 7.7 12 7.7ZM18 19H6V11H18V19Z"/>
+                </svg>
+                <h1 style="font-size: 28px; font-weight: bold; color: #333; margin: 0;">InfraSight</h1>
+                <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">School Infrastructure Monitoring</p>
+            </div>
+
+            <form id="loginForm" style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label for="email" style="font-weight: 600; color: #333; font-size: 14px;">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" required style="padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label for="password" style="font-weight: 600; color: #333; font-size: 14px;">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required style="padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="radio" id="citizen" name="role" value="citizen" checked>
+                    <label for="citizen" style="font-size: 14px; color: #555; margin: 0;">Citizen Reporter</label>
+                    <input type="radio" id="officer" name="role" value="officer" style="margin-left: 15px;">
+                    <label for="officer" style="font-size: 14px; color: #555; margin: 0;">Officer</label>
+                </div>
+
+                <button type="submit" class="btn-orange" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;">Login</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                <p style="font-size: 14px; color: #666; margin: 0;">Demo Credentials:</p>
+                <p style="font-size: 13px; color: #888; margin: 5px 0;">Email: demo@example.com | Password: demo123</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            // Simple validation - you can replace with actual authentication
+            if (email && password) {
+                Auth.login(role, {
+                    name: email.split('@')[0],
+                    email: email
+                });
+            } else {
+                alert('Please fill in all fields');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About InfraSight</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-about has-page-bg">
+    <header>
+        <div class="logo">InfraSight - School Infrastructure Monitoring System</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html" class="active">About</a></li>
+                <li><a href="status.html">School Status</a></li>
+                <li><a href="report.html">Report</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="team.html">Team</a></li>
+                <li id="logout-btn"><a href="#" onclick="Auth.logout()">Logout</a></li>
+                <li><div class="user-badge" id="userBadge">HI</div></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="section-title">About InfraSight</h1>
+        <p class="section-intro">InfraSight focuses on identifying poor and unsafe school infrastructure, especially where development funds may have been released but conditions remain unacceptable.</p>
+
+        <div class="about-content">
+            <h2>Why this platform exists</h2>
+            <p>Many government schools still face cracked walls, leaking roofs, damaged toilets, unsafe wiring and unusable classrooms. InfraSight gives citizens a simple way to report these issues and creates a visible record that officers can review.</p>
+            <p>Instead of relying only on paperwork, the platform collects direct visual evidence of bad infrastructure. This helps strengthen transparency, accountability and timely intervention in public education projects.</p>
+
+            <h2>How reporting works now</h2>
+            <p>Citizens upload one clear image of the bad condition, add location and school details, and describe the issue. Officers then review the complaint and mark it as pending, verified or flagged depending on inspection findings and fund-use concerns.</p>
+
+            <h2>How AI can support verification</h2>
+            <p>In the next stage, AI can help classify visible damage patterns such as roof leakage, wall cracks, broken furniture zones and unsafe facilities. It can also help prioritize severe reports and identify schools where reported repairs do not match current conditions on the ground.</p>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h3>📸 Evidence-first reporting</h3>
+                    <p>One image keeps the complaint focused and easy to review.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🧭 Location-based monitoring</h3>
+                    <p>Each report connects school condition with local infrastructure needs.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>✅ Officer validation</h3>
+                    <p>Officials verify whether the complaint reflects a real infrastructure problem.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🚩 Corruption visibility</h3>
+                    <p>Flagged cases help surface possible misuse of released development funds.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="status.html">School Status</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p>&copy; 2026 InfraSight - School Infrastructure Monitoring</p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.checkAuth();
+        });
+    </script>
+</body>
+</html>

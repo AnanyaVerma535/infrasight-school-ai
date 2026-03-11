@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact InfraSight</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-contact has-page-bg">
+    <header>
+        <div class="logo">InfraSight - School Infrastructure Monitoring System</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="status.html">School Status</a></li>
+                <li><a href="report.html">Report</a></li>
+                <li><a href="contact.html" class="active">Contact</a></li>
+                <li><a href="team.html">Team</a></li>
+                <li id="logout-btn"><a href="#" onclick="Auth.logout()">Logout</a></li>
+                <li><div class="user-badge" id="userBadge">HI</div></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="section-title">Contact & Public Feedback</h1>
+        <p class="section-intro">Share questions, escalation requests or public feedback related to damaged government school infrastructure and transparency in repair spending.</p>
+
+        <div class="contact-grid">
+            <div class="card">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="contactName">Your Name</label>
+                        <input type="text" id="contactName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">Email Address</label>
+                        <input type="email" id="contactEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactSubject">Subject</label>
+                        <input type="text" id="contactSubject" placeholder="Complaint, feedback, or inquiry" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactMessage">Message</label>
+                        <textarea id="contactMessage" rows="6" placeholder="Write your message here..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-orange" style="width: 100%;">Send Message</button>
+                </form>
+            </div>
+
+            <div class="contact-info">
+                <div class="info-item">
+                    <h3>📍 Coordination Office</h3>
+                    <p>School Infrastructure Monitoring Cell<br>New Delhi, India</p>
+                </div>
+                <div class="info-item">
+                    <h3>📧 Email</h3>
+                    <p>support@infrasight.gov.in<br>transparency@infrasight.gov.in</p>
+                </div>
+                <div class="info-item">
+                    <h3>📞 Helpline</h3>
+                    <p>1800-000-2024<br>011-4000-2024</p>
+                </div>
+                <div class="info-item">
+                    <h3>🕒 Office Hours</h3>
+                    <p>Monday to Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 2:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="status.html">School Status</a>
+            <a href="report.html">Report</a>
+        </div>
+        <p>&copy; 2026 InfraSight - School Infrastructure Monitoring</p>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.checkAuth();
+        });
+
+        document.getElementById('contactForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            alert('Thank you. Your message has been recorded for follow-up.');
+            event.target.reset();
+        });
+    </script>
+</body>
+</html>
