@@ -17,7 +17,7 @@ app.add_middleware(
 
 # Initialize AI Client
 # GET A FREE KEY HERE: https://aistudio.google.com/app/apikey
-client = genai.Client(api_key="AIzaSyBWdy24wCP_bUDqtE9OKRL_-6jHCFBCUZ8")
+client = genai.Client(api_key="GEMINI API KEY HERE")
 
 @app.post("/api/classify")
 async def classify_image(image_base64: str = Form(...)):
